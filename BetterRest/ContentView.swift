@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
+    // I'm going to create one var with the value of 7AM in Date format. This will be default value of var 'wakeUp'. It will be 'static' because I need to use it inside another var
+    static var defaultWakeTime: Date {
+        var components = DateComponents()
+        components.hour = 7
+        components.minute = 0
+        return Calendar.current.date(from: components) ?? Date()
+    }
+    
     @State private var sleepAmount = 8.0
-    @State private var wakeUp = Date()
+    @State private var wakeUp = defaultWakeTime
     @State private var coffeeAmount = 1
     // I'm going to use an alert in order to show the result of the prediction then I need this 3 vars
     @State private var alertTitle = ""
@@ -18,23 +26,27 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("When do you want to wake up?")
-                    .font(.headline)
-                DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-                Text("Desired amount of sleep")
-                    .font(.headline)
-                Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
-                    Text("\(sleepAmount, specifier: "%g") hours")
+            // Using a Form all the componentes are well positioned
+            Form {
+                // Using sections I can differentiate each part easily
+                Section(header: Text("When do you want to wake up?")) {
+                    DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                        // With the next modifier we can see the wheel picker right in the form
+                        .datePickerStyle(WheelDatePickerStyle())
                 }
-                Text("Daily coffee intake")
-                    .font(.headline)
-                Stepper(value: $coffeeAmount, in: 1...20) {
-                    if coffeeAmount == 1 {
-                        Text("1 cup")
-                    } else {
-                        Text("\(coffeeAmount) cups")
+                Section(header: Text("Desired amount of sleep")) {
+                    Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
+                        Text("\(sleepAmount, specifier: "%g") hours")
+                    }
+                }
+                Section(header: Text("Daily coffee intake")) {
+                    Stepper(value: $coffeeAmount, in: 1...20) {
+                        if coffeeAmount == 1 {
+                            Text("1 cup")
+                        } else {
+                            Text("\(coffeeAmount) cups")
+                        }
                     }
                 }
             }
@@ -44,7 +56,7 @@ struct ContentView: View {
                     Text("Calculate")
                 }
             )
-            // I need to add a modifier in the 'VStack' in order to show the alert message
+            // I need to add a modifier in the 'Form' in order to show the alert message
             .alert(isPresented: $showingAlert) {
                 Alert(title: Text(alertTitle), message: Text(alertMessage), dismissButton: .default(Text("OK")))
             }
